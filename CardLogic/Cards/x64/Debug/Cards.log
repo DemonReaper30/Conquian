@@ -1,0 +1,6 @@
+﻿  Main.cpp
+D:\VS C++ Projects\CardLogic\Cards\Game.h(2,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\VS C++ Projects\CardLogic\Cards\Game.h(3,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\VS C++ Projects\CardLogic\Cards\Dealer.h(21,44): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\VS C++ Projects\CardLogic\Cards\Dealer.h(21,30): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+  Cards.vcxproj -> D:\VS C++ Projects\CardLogic\x64\Debug\Cards.exe
