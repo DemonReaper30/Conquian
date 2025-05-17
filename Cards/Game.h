@@ -8,7 +8,7 @@ class Game {
 private:
     Deck deck;
     std::vector<Player> players;
-    const int maxPlayers = 1;
+    const int maxPlayers = 3;
 
 public:
     void playGame() {
@@ -49,40 +49,53 @@ public:
         bool cardDrawn = false;
 
         do {
+            // sugestion: check if not null
             if (!cardDrawn) {
-                Card drawnCard = deck.drawCard();
-
-                std::cout << "drawn card: ";
-                drawnCard.display();
+                drawnCard = deck.drawCard();
                 cardDrawn = true;
             }
+            std::cout << "Drawn Card: ";
+            drawnCard.display();
 
-            std::cout << "Player " << currentPlayerIndex << "'s " << "Hand: \n";
+            std::cout << "\nPlayer " << (currentPlayerIndex + 1) << "'s " << "Turn: \n";
             players[currentPlayerIndex].organizeHand();
             players[currentPlayerIndex].displayHand();
 
             int choice;
-            std::cout << "1. Meld with drawn card.\n2. Meld with cards from hand.\n3. Pass drawn card\n";
+            std::cout << "1. Meld with drawn card.\n2. Meld with cards from hand.\n3. Add a card to your meld\n4. Pass drawn card\n";
             std::cin >> choice;
             if (choice == 1) {
-                // this has player choose the right index to create a meld
-                // same rank different suits doesn't meld for some reason
-                // assuiming a hand of 6 cards, the 6th card is invalid
-                // drawn card: Two of Hearts, cards used: Ace and Three of Hearts >> doesn't meld
                 createMeldWithDrawnCard(players[currentPlayerIndex], drawnCard);
+                players[currentPlayerIndex].displayMelds();
+
+                // assuming a hand of 6 cards, the 6th card is invalid
                 deck.dumpCard(players[currentPlayerIndex], drawnCard, players, currentPlayerIndex);
+                // dumped card becomes the new drawn card and turn goes to the next player
+
 
             }
             if (choice == 2) {
                 createMeldWithHand(players[currentPlayerIndex]);
                 continue;
             }
-            else if (choice == 3) {
+            if (choice == 3) {
+                addCardToMeld(players[currentPlayerIndex]);
+                deck.dumpCard(players[currentPlayerIndex], drawnCard, players, currentPlayerIndex);
+                // dumped card becomes the new drawn card and turn goes to the next player
+            }
+            else if (choice == 4) {
+				// if its player 1's turn and all players haved passed, it beceomes player 2's turn
+				// if it's player 1's turn and player 3 wants and melds the card, force to dump. then it becomes the next players turn.
                 std::cout << "You passed on the drawn card.\n";
+
+				
+
                 cardDrawn = false;
                 continue;
             }
         } while (!players[currentPlayerIndex].winCondition());
+        // Announce the winner
+        std::cout << "Player " << currentPlayerIndex << " is the Winner!\n";
     }
 
     void createMeldWithHand(Player& player) {
@@ -120,13 +133,13 @@ public:
             if (player.isValidMeld(newMeld)) {
                 player.addMeld(newMeld);
                 validMeld = true;
-                std::cout << "Meld added successfully.\n";
+                std::cout << "Meld added successfully.\n\n";
             }
             else {
                 std::cout << "Invalid meld. Try again or type -1 to quit.\n";
                 // Restore the cards to the player's hand if the meld is invalid
                 for (const auto& card : newMeld) {
-                    players[0].addCard(card);
+                    player.addCard(card);
                 }
             }
         }
@@ -135,6 +148,11 @@ public:
     void createMeldWithDrawnCard(Player& player, const Card& drawnCard) {
         // Loop to prompt the player to choose 2 cards from hand and use the drawn card to create a meld
         bool validMeld = false;
+
+		std::cout << "Drawn card: ";
+		drawnCard.display();
+		std::cout << std::endl;
+
         while (!validMeld) {
             player.displayHand();
             std::cout << "Choose 2 cards from your hand to add to the meld with the drawn card or type -1 to quit: \n";
@@ -152,7 +170,9 @@ public:
 
                 handIndex -= 1;
 
-                if (handIndex >= 0 && handIndex < static_cast<int>(players[0].getHand().size())) {
+                int handSize = player.getHand().size();
+
+                if (handIndex >= 0 && handIndex < handSize) {
                     selectedIndices.push_back(handIndex);
                 }
                 else {
@@ -232,4 +252,33 @@ public:
             selectedMeld.pop_back();  // Undo the addition if it's not valid
         }
     }
+
+	void passMotion(Player& player, int& playerIndex, const std::vector<Player>& players, Card& drawnCard) {
+		// Implement the logic for passing a card to the next player
+		std::cout << "You passed on the drawn card.\n";
+
+        // Move to the next player
+        playerIndex = (playerIndex + 1) % players.size(); // cycle through players
+        player = players[playerIndex];
+
+        // Ask next player
+		std::cout << "Player " << (playerIndex + 1) << " Card choice? \n";
+		int choice;
+		std::cout << "1. Want\n2. Pass\n";
+		std::cin >> choice;
+		if (choice == 1) {
+			createMeldWithDrawnCard(player, drawnCard);
+			player.displayMelds();
+		}
+		else if (choice == 2) {
+			std::cout << "You passed on the drawn card.\n";
+			// This repeats untill all players have passed, or one player melds the card
+			passMotion(player, playerIndex, players, drawnCard);
+		}
+        else {
+            std::cerr << "Invalid choice. Try again.\n";
+            passMotion(player, playerIndex, players, drawnCard);
+        }
+
+	}
 };

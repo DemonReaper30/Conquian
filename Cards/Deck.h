@@ -62,27 +62,32 @@ public:
 		return players;
 	}
 
-	void dumpCard(Player& currentPlayer, Card& drawnCard, std::vector<Player>& players, int& currentPlayerIndex) {
-		// Display the player's hand
-		std::cout << "Choose a card from your hand to dump:\n";
-		currentPlayer.displayHand();
+    void dumpCard(Player& currentPlayer, Card& drawnCard, std::vector<Player>& players, int& currentPlayerIndex) {
+    // Display the player's hand
+    std::cout << "Choose a card from your hand to dump:\n";
+    const auto& hand = currentPlayer.getHand();
+    for (size_t i = 0; i < hand.size(); i++) {
+					std::cout << (i + 1) << ": ";
+					hand[i].display();
+    }
 
-		// Get input from the player for which card to dump
-		int cardIndex;
-		std::cin >> cardIndex;
+    // Get input from the player for which card to dump
+    int cardIndex;
+    std::cin >> cardIndex;
+    cardIndex -= 1; // adjust input to 0-based index
 
-		if (cardIndex < 0 || cardIndex >= static_cast<int>(currentPlayer.getHand().size())) {
-			std::cerr << "Invalid card index.\n";
-			return;
-		}
+    if (cardIndex < 0 || cardIndex >= static_cast<int>(currentPlayer.getHand().size())) {
+					std::cerr << "Invalid card index.\n";
+					return;
+    }
 
-		// Remove the chosen card from the player's hand and set it as the new drawn card
-		drawnCard = currentPlayer.giveCard(cardIndex);
-		std::cout << "You dumped: ";
-		drawnCard.display(); // Assuming Card has a display method
+    // Remove the chosen card from the player's hand and set it as the new drawn card
+    drawnCard = currentPlayer.giveCard(cardIndex);
+    std::cout << "You dumped: ";
+    drawnCard.display(); // Assuming Card has a display method
 
-		//// Move to the next player
-		//currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // Cycle through players
-		//std::cout << "It's now Player " << currentPlayerIndex + 1 << "'s turn.\n";
-	}
+    // move to the next player
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // cycle through players
+    std::cout << "It's now player " << currentPlayerIndex + 1 << "'s turn.\n";
+    }
 };

@@ -19,7 +19,7 @@ public:
 	}
 
 	void displayHand() const {
-		std::cout << "Players hand: \n";
+		std::cout << "\nHand: \n";
 		for (size_t i = 0; i < hand.size(); ++i) {
 			std::cout << "[" << i + 1 << "] "; // Display the index
 			hand[i].display(); // Display the card
@@ -149,6 +149,6 @@ public:
 			totalMeldCards += meld.size();
 		}
 
-		return totalMeldCards == 11;
+		return totalMeldCards == 9;
 	}
 };
