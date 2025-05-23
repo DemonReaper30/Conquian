@@ -1,6 +1,6 @@
-#include <iostream>;
-#include <unordered_map>;
-#include <algorithm>;
+#include <iostream>
+#include <unordered_map>
+#include <algorithm>
 #include "Deck.h"
 #include "Players.h"
 
@@ -71,8 +71,6 @@ public:
                 // assuming a hand of 6 cards, the 6th card is invalid
                 deck.dumpCard(players[currentPlayerIndex], drawnCard, players, currentPlayerIndex);
                 // dumped card becomes the new drawn card and turn goes to the next player
-
-
             }
             if (choice == 2) {
                 createMeldWithHand(players[currentPlayerIndex]);
@@ -84,15 +82,15 @@ public:
                 // dumped card becomes the new drawn card and turn goes to the next player
             }
             else if (choice == 4) {
-				// if its player 1's turn and all players haved passed, it beceomes player 2's turn
-				// if it's player 1's turn and player 3 wants and melds the card, force to dump. then it becomes the next players turn.
                 std::cout << "You passed on the drawn card.\n";
-
-				
-
-                cardDrawn = false;
+				passMotion(currentPlayerIndex, players, drawnCard);
+				cardDrawn = false; // New turn, so reset cardDrawn
+                currentPlayerIndex = (currentPlayerIndex + 1) % maxPlayers; // Move to the next player
                 continue;
             }
+
+            
+
         } while (!players[currentPlayerIndex].winCondition());
         // Announce the winner
         std::cout << "Player " << currentPlayerIndex << " is the Winner!\n";
@@ -253,32 +251,39 @@ public:
         }
     }
 
-	void passMotion(Player& player, int& playerIndex, const std::vector<Player>& players, Card& drawnCard) {
-		// Implement the logic for passing a card to the next player
-		std::cout << "You passed on the drawn card.\n";
+    void passMotion(int& playerIndex, std::vector<Player>& players, Card& drawnCard, int passCount = 1) {
+        int numPlayers = players.size();
 
-        // Move to the next player
-        playerIndex = (playerIndex + 1) % players.size(); // cycle through players
-        player = players[playerIndex];
-
-        // Ask next player
-		std::cout << "Player " << (playerIndex + 1) << " Card choice? \n";
-		int choice;
-		std::cout << "1. Want\n2. Pass\n";
-		std::cin >> choice;
-		if (choice == 1) {
-			createMeldWithDrawnCard(player, drawnCard);
-			player.displayMelds();
-		}
-		else if (choice == 2) {
-			std::cout << "You passed on the drawn card.\n";
-			// This repeats untill all players have passed, or one player melds the card
-			passMotion(player, playerIndex, players, drawnCard);
-		}
-        else {
-            std::cerr << "Invalid choice. Try again.\n";
-            passMotion(player, playerIndex, players, drawnCard);
+        // Only allow passing to the next 2 players
+        if (passCount > 2) {
+            std::cout << "All players have passed. Next turn begins.\n";
+            return;
         }
 
-	}
+        // Move to the next player
+        playerIndex = (playerIndex + 1) % numPlayers;
+        Player& currentPlayer = players[playerIndex];
+
+        std::cout << "Player " << (playerIndex + 1) << ", do you want the drawn card?\n";
+        std::cout << "1. Want\n2. Pass\n";
+        int choice;
+        std::cin >> choice;
+
+        if (choice == 1) {
+            // Player wants the card, meld with it
+            createMeldWithDrawnCard(currentPlayer, drawnCard);
+            currentPlayer.displayMelds();
+            // After a player takes the card, the turn ends
+            return;
+        }
+        else if (choice == 2) {
+            // Continue passing to the next player, but only up to 2 passes
+            passMotion(playerIndex, players, drawnCard, passCount + 1);
+        }
+        else {
+            std::cerr << "Invalid choice. Try again.\n";
+            // Do not increment passCount for invalid input
+            passMotion(playerIndex, players, drawnCard, passCount);
+        }
+    }
 };
