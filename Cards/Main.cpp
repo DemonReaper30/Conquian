@@ -14,4 +14,7 @@ int main()
 // ctrl + k, ctrl + u to Uncomment
 
 // to do:
-// stop passMotion function from being an infinte recursion
+// pass motion is bugged
+// turn rotation works on player 1 but player 2 repeats its turn
+// player 3 is untested
+// Show each player cards when deciding if they want the drawn card or not
