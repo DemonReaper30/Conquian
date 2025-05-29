@@ -264,7 +264,7 @@ public:
         playerIndex = (playerIndex + 1) % numPlayers;
         Player& currentPlayer = players[playerIndex];
 
-        std::cout << "Drawn Card: "; 
+        std::cout << "Drawn card: "; 
         drawnCard.display();
         currentPlayer.displayHand();
 
