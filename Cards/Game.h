@@ -68,9 +68,12 @@ public:
                 createMeldWithDrawnCard(players[currentPlayerIndex], drawnCard);
                 players[currentPlayerIndex].displayMelds();
 
-                // assuming a hand of 6 cards, the 6th card is invalid
-                deck.dumpCard(players[currentPlayerIndex], drawnCard, players, currentPlayerIndex);
+                // player 3 dumps a card in index 1 rather 2 in the gameplay loop, becomes invalid choice as if choosing the from the initial choices then the turn goes backwards Ie. player 3 to 2.
+                drawnCard = deck.dumpCard(players[currentPlayerIndex], players, currentPlayerIndex);
+                cardDrawn = true; // make sure we don't overwrite it next turn
                 // dumped card becomes the new drawn card and turn goes to the next player
+                // move to the next player
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // Move to next player
             }
             if (choice == 2) {
                 createMeldWithHand(players[currentPlayerIndex]);
@@ -78,13 +81,29 @@ public:
             }
             if (choice == 3) {
                 addCardToMeld(players[currentPlayerIndex]);
-                deck.dumpCard(players[currentPlayerIndex], drawnCard, players, currentPlayerIndex);
+                drawnCard = deck.dumpCard(players[currentPlayerIndex], players, currentPlayerIndex);
+                cardDrawn = true; // make sure we don't overwrite it next turn
                 // dumped card becomes the new drawn card and turn goes to the next player
+                // move to the next player
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // Move to next player
             }
             else if (choice == 4) {
                 std::cout << "You passed on the drawn card.\n";
-				passMotion(currentPlayerIndex, players, drawnCard);
-				cardDrawn = false; // New turn, so reset cardDrawn
+				bool takenCard = passMotion(currentPlayerIndex, players, drawnCard);
+
+                if (!takenCard) {
+                    // If no one took the card, we continue with the same drawn card
+                    cardDrawn = false; // Reset cardDrawn since a new card is drawn
+                }
+                else {
+                    // If the card was taken, we continue to the next player
+                    takenCard = true; // Reset cardDrawn since a new card is drawn
+                    std::cout << "Card has been taken, A new card is drawn\n";
+                }
+            }
+            else {
+				std::cerr << "Invalid choice. Try again.\n";
+				cardDrawn = true;
                 currentPlayerIndex = (currentPlayerIndex + 1) % maxPlayers; // Move to the next player
                 continue;
             }
@@ -251,21 +270,25 @@ public:
         }
     }
 
-    void passMotion(int& playerIndex, std::vector<Player>& players, Card& drawnCard, int passCount = 1) {
+    bool passMotion(int& playerIndex, std::vector<Player>& players, Card& drawnCard, int passCount = 1) {
         int numPlayers = players.size();
+		int originalIndex = playerIndex; // Store the original index for reference
 
         // Only allow passing to the next 2 players
         if (passCount > 2) {
             std::cout << "All players have passed. Next turn begins.\n\n";
-            return;
+            // Set to the player AFTER the original player
+            playerIndex = (originalIndex + 1) % numPlayers;
+            return false;
         }
 
         // Move to the next player
         playerIndex = (playerIndex + 1) % numPlayers;
         Player& currentPlayer = players[playerIndex];
 
-        std::cout << "Drawn card: "; 
+        std::cout << "\nDrawn card: "; 
         drawnCard.display();
+        currentPlayer.organizeHand();
         currentPlayer.displayHand();
 
         std::cout << "Player " << (playerIndex + 1) << ", do you want the drawn card?\n";
@@ -277,17 +300,21 @@ public:
             // Player wants the card, meld with it
             createMeldWithDrawnCard(currentPlayer, drawnCard);
             currentPlayer.displayMelds();
-            // After a player takes the card, the turn ends
-            return;
+            // After a player takes the card they drop another card, then turn ends
+            drawnCard = deck.dumpCard(currentPlayer, players, playerIndex);
+            // move to the next player
+            playerIndex = (playerIndex + 1) % players.size(); // cycle through players
+            return true;
         }
         else if (choice == 2) {
             // Continue passing to the next player, but only up to 2 passes
-            passMotion(playerIndex, players, drawnCard, passCount + 1);
+            return passMotion(playerIndex, players, drawnCard, passCount + 1);
         }
         else {
+			// Input validation does not work here
             std::cerr << "Invalid choice. Try again.\n";
             // Do not increment passCount for invalid input
-            passMotion(playerIndex, players, drawnCard, passCount);
+            return passMotion(playerIndex, players, drawnCard, passCount);
         }
     }
 };

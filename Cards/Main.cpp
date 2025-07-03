@@ -14,7 +14,4 @@ int main()
 // ctrl + k, ctrl + u to Uncomment
 
 // to do:
-// pass motion is bugged
-// turn rotation works on player 1 but player 2 repeats its turn
-// player 3 is untested
-// Show each player cards when deciding if they want the drawn card or not
+// meldwithdrawncard has expeted card indexes invalid and turn reverses to the last players turn

@@ -62,7 +62,7 @@ public:
 		return players;
 	}
 
-    void dumpCard(Player& currentPlayer, Card& drawnCard, std::vector<Player>& players, int& currentPlayerIndex) {
+    Card dumpCard(Player& currentPlayer, std::vector<Player>& players, int& currentPlayerIndex) {
     // Display the player's hand
     std::cout << "Choose a card from your hand to dump:\n";
     const auto& hand = currentPlayer.getHand();
@@ -78,16 +78,13 @@ public:
 
     if (cardIndex < 0 || cardIndex >= static_cast<int>(currentPlayer.getHand().size())) {
 					std::cerr << "Invalid card index.\n";
-					return;
+					return Card();
     }
 
     // Remove the chosen card from the player's hand and set it as the new drawn card
-    drawnCard = currentPlayer.giveCard(cardIndex);
+	Card dumpedCard = currentPlayer.giveCard(cardIndex);
     std::cout << "You dumped: ";
-    drawnCard.display(); // Assuming Card has a display method
-
-    // move to the next player
-    currentPlayerIndex = (currentPlayerIndex + 1) % players.size(); // cycle through players
-    std::cout << "It's now player " << currentPlayerIndex + 1 << "'s turn.\n";
+    dumpedCard.display(); // Assuming Card has a display method
+	return dumpedCard;
     }
 };
